@@ -79,8 +79,7 @@ h1 {
 }
 
 .buttons button:nth-child(1) { background-color: #00c853; }  /* More modern green */
-.buttons button:nth-child(2) { background-color: #897df8; }  /* More modern red */
-.buttons button:nth-child(3) { background-color: #448aff; }  /* More modern blue */
+.buttons button:nth-child(2) { background-color: #448aff; }  /* More modern blue */
 
 .controls button:hover {
     opacity: 0.9;

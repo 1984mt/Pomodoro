@@ -1,7 +1,6 @@
 const timerDisplay = document.querySelector('.timer');
-const startButton = document.querySelector('.buttons button:nth-child(1)');
-const pauseButton = document.querySelector('.buttons button:nth-child(2)');
-const resetButton = document.querySelector('.buttons button:nth-child(3)');
+const startPauseButton = document.querySelector('#startPauseBtn');
+const resetButton = document.querySelector('.buttons button:nth-child(2)');
 const modeToggle = document.querySelector('#mode-toggle');
 const modeLabel = document.querySelector('.mode label');
 const statusText = document.querySelector('.status');
@@ -76,9 +75,18 @@ function toggleMode() {
     updateModeLabel();
 }
 
+function toggleStartPause() {
+    if (timerId === null) {
+        startTimer();
+        startPauseButton.textContent = 'Pause';
+    } else {
+        pauseTimer();
+        startPauseButton.textContent = 'Start';
+    }
+}
+
 // Event listeners
-startButton.addEventListener('click', startTimer);
-pauseButton.addEventListener('click', pauseTimer);
+startPauseButton.addEventListener('click', toggleStartPause);
 resetButton.addEventListener('click', resetTimer);
 modeToggle.addEventListener('change', toggleMode);
 
