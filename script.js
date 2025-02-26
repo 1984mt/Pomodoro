@@ -12,6 +12,21 @@ let isWorkMode = true;
 const WORK_TIME = 25 * 60;
 const BREAK_TIME = 5 * 60;
 
+let isPageVisible = true;
+let lastTimestamp = Date.now();
+
+// Add visibility change detection
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        isPageVisible = false;
+    } else {
+        isPageVisible = true;
+        if (timerId !== null) {
+            lastTimestamp = Date.now();
+        }
+    }
+});
+
 function updateDisplay() {
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;
@@ -24,19 +39,27 @@ function updateDisplay() {
 
 function startTimer() {
     if (timerId === null) {
+        lastTimestamp = Date.now();
         timerId = setInterval(() => {
-            timeLeft--;
-            updateDisplay();
-            
-            if (timeLeft === 0) {
-                clearInterval(timerId);
-                timerId = null;
-                alert(isWorkMode ? 'Work session complete! Take a break!' : 'Break time is over! Back to work!');
-                timeLeft = isWorkMode ? BREAK_TIME : WORK_TIME;
-                isWorkMode = !isWorkMode;
+            if (isPageVisible) {
+                const currentTime = Date.now();
+                const deltaTime = Math.floor((currentTime - lastTimestamp) / 1000);
+                lastTimestamp = currentTime;
+                
+                // Decrease time by actual elapsed seconds
+                timeLeft = Math.max(0, timeLeft - deltaTime);
                 updateDisplay();
-                updateModeLabel();
-                updateStatus();
+                
+                if (timeLeft === 0) {
+                    clearInterval(timerId);
+                    timerId = null;
+                    alert(isWorkMode ? 'Work session complete! Take a break!' : 'Break time is over! Back to work!');
+                    timeLeft = isWorkMode ? BREAK_TIME : WORK_TIME;
+                    isWorkMode = !isWorkMode;
+                    updateDisplay();
+                    updateModeLabel();
+                    updateStatus();
+                }
             }
         }, 1000);
     }
