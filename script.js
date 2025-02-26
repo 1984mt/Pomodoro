@@ -14,18 +14,51 @@ const BREAK_TIME = 5 * 60;
 
 let isPageVisible = true;
 let lastTimestamp = Date.now();
+let animationFrameId = null;
 
 // Add visibility change detection
 document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
         isPageVisible = false;
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
+        }
     } else {
         isPageVisible = true;
         if (timerId !== null) {
             lastTimestamp = Date.now();
+            tick();
         }
     }
 });
+
+function tick() {
+    if (timerId !== null) {
+        const currentTime = Date.now();
+        const deltaTime = Math.floor((currentTime - lastTimestamp) / 1000);
+        
+        if (deltaTime >= 1) {
+            lastTimestamp = currentTime;
+            timeLeft = Math.max(0, timeLeft - deltaTime);
+            updateDisplay();
+            
+            if (timeLeft === 0) {
+                clearInterval(timerId);
+                timerId = null;
+                alert(isWorkMode ? 'Work session complete! Take a break!' : 'Break time is over! Back to work!');
+                timeLeft = isWorkMode ? BREAK_TIME : WORK_TIME;
+                isWorkMode = !isWorkMode;
+                updateDisplay();
+                updateModeLabel();
+                updateStatus();
+                return;
+            }
+        }
+        
+        animationFrameId = requestAnimationFrame(tick);
+    }
+}
 
 function updateDisplay() {
     const minutes = Math.floor(timeLeft / 60);
@@ -40,35 +73,18 @@ function updateDisplay() {
 function startTimer() {
     if (timerId === null) {
         lastTimestamp = Date.now();
-        timerId = setInterval(() => {
-            if (isPageVisible) {
-                const currentTime = Date.now();
-                const deltaTime = Math.floor((currentTime - lastTimestamp) / 1000);
-                lastTimestamp = currentTime;
-                
-                // Decrease time by actual elapsed seconds
-                timeLeft = Math.max(0, timeLeft - deltaTime);
-                updateDisplay();
-                
-                if (timeLeft === 0) {
-                    clearInterval(timerId);
-                    timerId = null;
-                    alert(isWorkMode ? 'Work session complete! Take a break!' : 'Break time is over! Back to work!');
-                    timeLeft = isWorkMode ? BREAK_TIME : WORK_TIME;
-                    isWorkMode = !isWorkMode;
-                    updateDisplay();
-                    updateModeLabel();
-                    updateStatus();
-                }
-            }
-        }, 1000);
+        timerId = 1; // Using this as a flag instead of interval ID
+        tick();
     }
 }
 
 function pauseTimer() {
     if (timerId !== null) {
-        clearInterval(timerId);
         timerId = null;
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
+        }
     }
 }
 
